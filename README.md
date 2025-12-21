@@ -43,7 +43,7 @@ A modern accordion widget featuring:
 
 1. **Download the plugin**
    ```bash
-   git clone https://github.com/yourusername/elemntor-elemntor.git
+   git clone https://github.com/nirjondipo/elemntor-elemntor.git
    ```
 
 2. **Upload to WordPress**
