@@ -1,0 +1,23 @@
+/**
+ * Elemntor Elemntor Widget Styles
+ *
+ * @package Elemntor_Elemntor
+ */
+
+.elemntor-widget-wrapper {
+	padding: 20px;
+}
+
+.elemntor-widget-title {
+	margin: 0 0 15px 0;
+	font-size: 24px;
+	font-weight: 600;
+	line-height: 1.4;
+}
+
+.elemntor-widget-description {
+	font-size: 16px;
+	line-height: 1.6;
+	color: #666;
+}
+
