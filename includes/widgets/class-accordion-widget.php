@@ -340,6 +340,29 @@ class Accordion_Widget extends Widget_Base {
 		);
 
 		$this->add_control(
+			'title_active_color',
+			array(
+				'label'     => esc_html__( 'Text Color (Active)', 'elemntor-elemntor' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .ee-accordion-item.active .ee-accordion-title' => 'color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'border_indicator_color',
+			array(
+				'label'     => esc_html__( 'Left Border Indicator Color', 'elemntor-elemntor' ),
+				'type'      => Controls_Manager::COLOR,
+				'description' => esc_html__( 'Color of the left border indicator when accordion is active', 'elemntor-elemntor' ),
+				'selectors' => array(
+					'{{WRAPPER}} .ee-accordion-header::before' => 'background-color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
 			'title_spacing',
 			array(
 				'label'      => esc_html__( 'Spacing', 'elemntor-elemntor' ),
@@ -502,6 +525,18 @@ class Accordion_Widget extends Widget_Base {
 			)
 		);
 
+		$this->add_control(
+			'toggle_icon_active_background',
+			array(
+				'label'     => esc_html__( 'Toggle Icon Background (Active)', 'elemntor-elemntor' ),
+				'type'      => Controls_Manager::COLOR,
+				'description' => esc_html__( 'Background color of the toggle icon when accordion is active/open', 'elemntor-elemntor' ),
+				'selectors' => array(
+					'{{WRAPPER}} .ee-accordion-item.active .ee-accordion-toggle-icon' => 'background-color: {{VALUE}};',
+				),
+			)
+		);
+
 		$this->end_controls_section();
 
 		// Style Section - Content
@@ -543,7 +578,7 @@ class Accordion_Widget extends Widget_Base {
 			)
 		);
 
-		$this->add_control(
+		$this->add_responsive_control(
 			'content_padding',
 			array(
 				'label'      => esc_html__( 'Padding', 'elemntor-elemntor' ),
@@ -799,6 +834,18 @@ class Accordion_Widget extends Widget_Base {
 			}
 		}
 		
+		// Title Active Color - always output if set (including CSS variables)
+		if ( isset( $settings['title_active_color'] ) && $settings['title_active_color'] !== '' && $settings['title_active_color'] !== null ) {
+			$active_color = $settings['title_active_color'];
+			$css .= "{$base_selector} .ee-accordion-item.active .ee-accordion-title { color: {$active_color} !important; }";
+		}
+		
+		// Border Indicator Color - always output if set (including CSS variables)
+		if ( isset( $settings['border_indicator_color'] ) && $settings['border_indicator_color'] !== '' && $settings['border_indicator_color'] !== null ) {
+			$indicator_color = $settings['border_indicator_color'];
+			$css .= "{$base_selector} .ee-accordion-header::before { background-color: {$indicator_color} !important; }";
+		}
+		
 		// Title Spacing
 		if ( isset( $settings['title_spacing']['size'] ) && $settings['title_spacing']['size'] !== '' ) {
 			$spacing = $settings['title_spacing']['size'] . ( ! empty( $settings['title_spacing']['unit'] ) ? $settings['title_spacing']['unit'] : 'px' );
@@ -841,7 +888,13 @@ class Accordion_Widget extends Widget_Base {
 		// Toggle Icon Color (Open)
 		if ( ! empty( $settings['toggle_icon_open_color'] ) ) {
 			$css .= "{$base_selector} .ee-accordion-item.active .ee-accordion-toggle-icon { color: {$settings['toggle_icon_open_color']} !important; }";
-			$css .= "{$base_selector} .ee-accordion-item.active .ee-accordion-toggle-icon svg { fill: {$settings['toggle_icon_open_color']} !important; }";
+			$css .= "{$base_selector} .ee-accordion-item.active .ee-accordion-toggle-icon svg { fill: {$settings['toggle_icon_open_color']} !important; color: {$settings['toggle_icon_open_color']} !important; }";
+		}
+		
+		// Toggle Icon Background (Active) - always output if set (including CSS variables)
+		if ( isset( $settings['toggle_icon_active_background'] ) && $settings['toggle_icon_active_background'] !== '' && $settings['toggle_icon_active_background'] !== null ) {
+			$active_bg = $settings['toggle_icon_active_background'];
+			$css .= "{$base_selector} .ee-accordion-item.active .ee-accordion-toggle-icon { background-color: {$active_bg} !important; }";
 		}
 		
 		// Content Color - always output if set
@@ -883,29 +936,47 @@ class Accordion_Widget extends Widget_Base {
 			$icon_offset = $icon_size + $icon_spacing;
 		}
 		
-		if ( ! empty( $settings['content_padding'] ) && is_array( $settings['content_padding'] ) ) {
-			$top = ! empty( $settings['content_padding']['top'] ) ? $settings['content_padding']['top'] : '0';
-			$right = ! empty( $settings['content_padding']['right'] ) ? $settings['content_padding']['right'] : $top;
-			$bottom = ! empty( $settings['content_padding']['bottom'] ) ? $settings['content_padding']['bottom'] : $top;
-			$left = ! empty( $settings['content_padding']['left'] ) ? $settings['content_padding']['left'] : $top;
-			$unit = ! empty( $settings['content_padding']['unit'] ) ? $settings['content_padding']['unit'] : 'px';
+		// Handle responsive padding (desktop, tablet, mobile)
+		$breakpoints = array(
+			'' => '', // Desktop
+			'_tablet' => '@media (max-width: 1024px)',
+			'_mobile' => '@media (max-width: 767px)'
+		);
+		
+		foreach ( $breakpoints as $breakpoint_suffix => $media_query ) {
+			$padding_key = 'content_padding' . $breakpoint_suffix;
 			
-			// Add icon offset to left padding to align with title start
-			if ( $has_icon && $icon_offset > 0 ) {
-				$left_value = floatval( $left );
-				$left_with_offset = $left_value + $icon_offset;
-				$left_padding = $left_with_offset . $unit;
-			} else {
-				$left_padding = $left . $unit;
+			if ( ! empty( $settings[ $padding_key ] ) && is_array( $settings[ $padding_key ] ) ) {
+				$top = ! empty( $settings[ $padding_key ]['top'] ) ? $settings[ $padding_key ]['top'] : '0';
+				$right = ! empty( $settings[ $padding_key ]['right'] ) ? $settings[ $padding_key ]['right'] : $top;
+				$bottom = ! empty( $settings[ $padding_key ]['bottom'] ) ? $settings[ $padding_key ]['bottom'] : $top;
+				$left = ! empty( $settings[ $padding_key ]['left'] ) ? $settings[ $padding_key ]['left'] : $top;
+				$unit = ! empty( $settings[ $padding_key ]['unit'] ) ? $settings[ $padding_key ]['unit'] : 'px';
+				
+				// Add icon offset to left padding to align with title start (only for desktop)
+				if ( $breakpoint_suffix === '' && $has_icon && $icon_offset > 0 ) {
+					$left_value = floatval( $left );
+					$left_with_offset = $left_value + $icon_offset;
+					$left_padding = $left_with_offset . $unit;
+				} else {
+					$left_padding = $left . $unit;
+				}
+				
+				$padding = "{$top}{$unit} {$right}{$unit} {$bottom}{$unit} {$left_padding}";
+				
+				if ( $media_query ) {
+					$css .= "{$media_query} { {$base_selector} .ee-accordion-item.active .ee-accordion-content { padding: {$padding} !important; } }";
+				} else {
+					// Only apply padding when accordion is active (open)
+					$css .= "{$base_selector} .ee-accordion-item.active .ee-accordion-content { padding: {$padding} !important; }";
+					// Ensure closed state has no padding
+					$css .= "{$base_selector} .ee-accordion-content { padding: 0 !important; }";
+				}
 			}
-			
-			$padding = "{$top}{$unit} {$right}{$unit} {$bottom}{$unit} {$left_padding}";
-			// Only apply padding when accordion is active (open)
-			$css .= "{$base_selector} .ee-accordion-item.active .ee-accordion-content { padding: {$padding} !important; }";
-			// Ensure closed state has no padding
-			$css .= "{$base_selector} .ee-accordion-content { padding: 0 !important; }";
-		} else if ( $has_icon && $icon_offset > 0 ) {
-			// If no padding is set but icon exists, add offset for alignment
+		}
+		
+		// Fallback: If no padding is set but icon exists, still add offset for alignment (desktop only)
+		if ( empty( $settings['content_padding'] ) && $has_icon && $icon_offset > 0 ) {
 			$css .= "{$base_selector} .ee-accordion-item.active .ee-accordion-content { padding-left: {$icon_offset}px !important; }";
 		}
 		
