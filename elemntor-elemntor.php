@@ -190,10 +190,12 @@ final class Elemntor_Elemntor {
 		// Include Widget files
 		require_once __DIR__ . '/includes/widgets/class-elemntor-widget.php';
 		require_once __DIR__ . '/includes/widgets/class-mobile-menu-widget.php';
+		require_once __DIR__ . '/includes/widgets/class-accordion-widget.php';
 
 		// Register widgets
 		$widgets_manager->register( new \Elemntor_Elemntor\Widgets\Elemntor_Widget() );
 		$widgets_manager->register( new \Elemntor_Elemntor\Widgets\Mobile_Menu_Widget() );
+		$widgets_manager->register( new \Elemntor_Elemntor\Widgets\Accordion_Widget() );
 	}
 
 	/**
@@ -224,6 +226,7 @@ final class Elemntor_Elemntor {
 	public function widget_styles() {
 		wp_register_style( 'elemntor-elemntor-widget', plugins_url( 'assets/css/widget.css', __FILE__ ), array(), self::VERSION );
 		wp_register_style( 'elemntor-elemntor-mobile-menu', plugins_url( 'assets/css/mobile-menu.css', __FILE__ ), array(), self::VERSION );
+		wp_register_style( 'elemntor-elemntor-accordion', plugins_url( 'assets/css/accordion.css', __FILE__ ), array(), self::VERSION );
 	}
 
 	/**
@@ -237,6 +240,7 @@ final class Elemntor_Elemntor {
 	public function widget_scripts() {
 		wp_register_script( 'elemntor-elemntor-widget', plugins_url( 'assets/js/widget.js', __FILE__ ), array( 'jquery' ), self::VERSION, true );
 		wp_register_script( 'elemntor-elemntor-mobile-menu', plugins_url( 'assets/js/mobile-menu.js', __FILE__ ), array( 'jquery' ), self::VERSION, true );
+		wp_register_script( 'elemntor-elemntor-accordion', plugins_url( 'assets/js/accordion.js', __FILE__ ), array( 'jquery' ), self::VERSION, true );
 	}
 
 	/**

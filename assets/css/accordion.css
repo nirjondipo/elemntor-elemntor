@@ -1,0 +1,139 @@
+/**
+ * Elemntor Elemntor Accordion Styles
+ *
+ * @package Elemntor_Elemntor
+ */
+
+.ee-accordion {
+	width: 100%;
+}
+
+.ee-accordion-item {
+	width: 100%;
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+	overflow: hidden;
+	transition: all 0.3s ease;
+}
+
+.ee-accordion-header {
+	display: flex;
+	align-items: center;
+	padding: 15px 20px;
+	cursor: pointer;
+	background-color: #ffffff;
+	transition: background-color 0.3s ease;
+	position: relative;
+}
+
+.ee-accordion-header:hover {
+	background-color: #f5f5f5;
+}
+
+.ee-accordion-item.active .ee-accordion-header {
+	background-color: #f9f9f9;
+}
+
+.ee-accordion-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.ee-accordion-icon-left {
+	margin-right: 15px;
+}
+
+.ee-accordion-icon-left i,
+.ee-accordion-icon-left svg,
+.ee-accordion-icon-left .e-font-icon-svg {
+	display: block;
+	width: 24px;
+	height: 24px;
+	fill: currentColor;
+	color: inherit;
+}
+
+.ee-accordion-icon-left svg path {
+	fill: currentColor;
+}
+
+.ee-accordion-title {
+	flex: 1;
+	margin: 0;
+	padding: 0;
+	font-size: 16px;
+	font-weight: 500;
+	line-height: 1.5;
+	color: #333333;
+	text-align: left;
+}
+
+.ee-accordion-toggle-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	margin-left: 15px;
+	transition: all 0.3s ease;
+}
+
+.ee-accordion-toggle-icon i,
+.ee-accordion-toggle-icon svg,
+.ee-accordion-toggle-icon .e-font-icon-svg {
+	display: block;
+	width: 16px;
+	height: 16px;
+	fill: currentColor;
+	color: inherit;
+}
+
+.ee-accordion-toggle-icon svg path {
+	fill: currentColor;
+}
+
+.ee-accordion-content {
+	max-height: 0;
+	overflow: hidden;
+	transition: max-height 0.3s ease, padding 0.3s ease;
+	padding: 0 20px;
+	background-color: #ffffff;
+}
+
+.ee-accordion-item.active .ee-accordion-content {
+	max-height: 5000px;
+	padding: 20px;
+}
+
+.ee-accordion-content p {
+	margin: 0 0 15px 0;
+}
+
+.ee-accordion-content p:last-child {
+	margin-bottom: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.ee-accordion-header {
+		padding: 12px 15px;
+	}
+
+	.ee-accordion-title {
+		font-size: 14px;
+	}
+
+	.ee-accordion-item.active .ee-accordion-content {
+		padding: 15px;
+	}
+
+	.ee-accordion-icon-left {
+		margin-right: 10px;
+	}
+
+	.ee-accordion-toggle-icon {
+		margin-left: 10px;
+	}
+}
+
