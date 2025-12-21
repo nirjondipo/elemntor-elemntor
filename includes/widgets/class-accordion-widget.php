@@ -76,7 +76,7 @@ class Accordion_Widget extends Widget_Base {
 	 * @return array Widget categories.
 	 */
 	public function get_categories() {
-		return array( 'general' );
+		return array( 'custom-elements' );
 	}
 
 	/**
@@ -329,6 +329,17 @@ class Accordion_Widget extends Widget_Base {
 		);
 
 		$this->add_control(
+			'title_hover_color',
+			array(
+				'label'     => esc_html__( 'Text Color (Hover)', 'elemntor-elemntor' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .ee-accordion-header:hover .ee-accordion-title' => 'color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
 			'title_spacing',
 			array(
 				'label'      => esc_html__( 'Spacing', 'elemntor-elemntor' ),
@@ -539,7 +550,19 @@ class Accordion_Widget extends Widget_Base {
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', 'em', '%' ),
 				'selectors'  => array(
-					'{{WRAPPER}} .ee-accordion-content' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+					'{{WRAPPER}} .ee-accordion-item.active .ee-accordion-content' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'content_border_radius',
+			array(
+				'label'      => esc_html__( 'Border Radius', 'elemntor-elemntor' ),
+				'type'       => Controls_Manager::DIMENSIONS,
+				'size_units' => array( 'px', '%' ),
+				'selectors'  => array(
+					'{{WRAPPER}} .ee-accordion-content' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				),
 			)
 		);
@@ -612,6 +635,17 @@ class Accordion_Widget extends Widget_Base {
 			)
 		);
 
+		$this->add_control(
+			'header_hover_background',
+			array(
+				'label'     => esc_html__( 'Header Background (Hover)', 'elemntor-elemntor' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .ee-accordion-header:hover' => 'background-color: {{VALUE}};',
+				),
+			)
+		);
+
 		$this->add_group_control(
 			Group_Control_Border::get_type(),
 			array(
@@ -659,6 +693,11 @@ class Accordion_Widget extends Widget_Base {
 		}
 
 		$this->add_render_attribute( 'wrapper', 'class', 'ee-accordion' );
+		
+		// Print inline styles on frontend only (not in editor) as fallback
+		if ( ! \Elementor\Plugin::$instance->editor->is_edit_mode() ) {
+			$this->print_inline_css();
+		}
 		?>
 		<div <?php $this->print_render_attribute_string( 'wrapper' ); ?>>
 			<?php
@@ -717,6 +756,234 @@ class Accordion_Widget extends Widget_Base {
 			?>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Print inline CSS for widget styles.
+	 *
+	 * This ensures styles are applied on frontend even if Elementor's CSS generation fails.
+	 * Uses the widget's unique ID to target the specific instance.
+	 *
+	 * @since 1.0.0
+	 * @access private
+	 */
+	private function print_inline_css() {
+		$settings = $this->get_settings_for_display();
+		$widget_id = $this->get_id();
+		
+		if ( empty( $widget_id ) ) {
+			$widget_id = uniqid( 'ee-accordion-' );
+		}
+		
+		$widget_selector = '.elementor-element.elementor-element-' . $widget_id;
+		$post_id = get_the_ID();
+		$post_selector = '';
+		if ( $post_id ) {
+			$post_selector = '.elementor-' . $post_id . ' ' . $widget_selector;
+		}
+		
+		$base_selector = ! empty( $post_selector ) ? $post_selector : $widget_selector;
+		$css = '';
+		
+		// Title Color - always output if set (even if empty, to override defaults)
+		if ( isset( $settings['title_color'] ) ) {
+			$color = ! empty( $settings['title_color'] ) ? $settings['title_color'] : 'inherit';
+			$css .= "{$base_selector} .ee-accordion-title { color: {$color} !important; }";
+		}
+		
+		// Title Hover Color
+		if ( isset( $settings['title_hover_color'] ) ) {
+			$hover_color = ! empty( $settings['title_hover_color'] ) ? $settings['title_hover_color'] : '';
+			if ( $hover_color !== '' && $hover_color !== null ) {
+				$css .= "{$base_selector} .ee-accordion-header:hover .ee-accordion-title { color: {$hover_color} !important; }";
+			}
+		}
+		
+		// Title Spacing
+		if ( isset( $settings['title_spacing']['size'] ) && $settings['title_spacing']['size'] !== '' ) {
+			$spacing = $settings['title_spacing']['size'] . ( ! empty( $settings['title_spacing']['unit'] ) ? $settings['title_spacing']['unit'] : 'px' );
+			$css .= "{$base_selector} .ee-accordion-title { margin: 0 {$spacing} !important; }";
+		}
+		
+		// Icon Size
+		if ( isset( $settings['icon_size']['size'] ) && $settings['icon_size']['size'] !== '' ) {
+			$icon_size = $settings['icon_size']['size'] . ( ! empty( $settings['icon_size']['unit'] ) ? $settings['icon_size']['unit'] : 'px' );
+			$css .= "{$base_selector} .ee-accordion-icon-left svg { width: {$icon_size} !important; height: {$icon_size} !important; }";
+			$css .= "{$base_selector} .ee-accordion-icon-left i { font-size: {$icon_size} !important; }";
+		}
+		
+		// Icon Color - always output if set
+		if ( isset( $settings['icon_color'] ) ) {
+			$color = ! empty( $settings['icon_color'] ) ? $settings['icon_color'] : 'inherit';
+			$css .= "{$base_selector} .ee-accordion-icon-left { color: {$color} !important; }";
+			$css .= "{$base_selector} .ee-accordion-icon-left svg { fill: {$color} !important; }";
+		}
+		
+		// Icon Spacing
+		if ( isset( $settings['icon_spacing']['size'] ) && $settings['icon_spacing']['size'] !== '' ) {
+			$icon_spacing = $settings['icon_spacing']['size'] . ( ! empty( $settings['icon_spacing']['unit'] ) ? $settings['icon_spacing']['unit'] : 'px' );
+			$css .= "{$base_selector} .ee-accordion-icon-left { margin-right: {$icon_spacing} !important; }";
+		}
+		
+		// Toggle Icon Size
+		if ( ! empty( $settings['toggle_icon_size']['size'] ) ) {
+			$toggle_size = $settings['toggle_icon_size']['size'] . ( ! empty( $settings['toggle_icon_size']['unit'] ) ? $settings['toggle_icon_size']['unit'] : 'px' );
+			$css .= "{$base_selector} .ee-accordion-toggle-icon svg { width: {$toggle_size} !important; height: {$toggle_size} !important; }";
+			$css .= "{$base_selector} .ee-accordion-toggle-icon i { font-size: {$toggle_size} !important; }";
+		}
+		
+		// Toggle Icon Color
+		if ( ! empty( $settings['toggle_icon_color'] ) ) {
+			$css .= "{$base_selector} .ee-accordion-toggle-icon { color: {$settings['toggle_icon_color']} !important; }";
+			$css .= "{$base_selector} .ee-accordion-toggle-icon svg { fill: {$settings['toggle_icon_color']} !important; }";
+		}
+		
+		// Toggle Icon Color (Open)
+		if ( ! empty( $settings['toggle_icon_open_color'] ) ) {
+			$css .= "{$base_selector} .ee-accordion-item.active .ee-accordion-toggle-icon { color: {$settings['toggle_icon_open_color']} !important; }";
+			$css .= "{$base_selector} .ee-accordion-item.active .ee-accordion-toggle-icon svg { fill: {$settings['toggle_icon_open_color']} !important; }";
+		}
+		
+		// Content Color - always output if set
+		if ( isset( $settings['content_color'] ) ) {
+			$color = ! empty( $settings['content_color'] ) ? $settings['content_color'] : 'inherit';
+			$css .= "{$base_selector} .ee-accordion-content { color: {$color} !important; }";
+		}
+		
+		// Content Background - always output if set (including CSS variables)
+		if ( isset( $settings['content_background'] ) && $settings['content_background'] !== '' && $settings['content_background'] !== null ) {
+			$bg = $settings['content_background'];
+			// Apply to both active and inactive states to ensure it works
+			$css .= "{$base_selector} .ee-accordion-content { background-color: {$bg} !important; }";
+			$css .= "{$base_selector} .ee-accordion-item.active .ee-accordion-content { background-color: {$bg} !important; }";
+		}
+		
+		// Content Border Radius
+		if ( isset( $settings['content_border_radius'] ) && is_array( $settings['content_border_radius'] ) ) {
+			$top = ! empty( $settings['content_border_radius']['top'] ) ? $settings['content_border_radius']['top'] : '0';
+			$right = ! empty( $settings['content_border_radius']['right'] ) ? $settings['content_border_radius']['right'] : $top;
+			$bottom = ! empty( $settings['content_border_radius']['bottom'] ) ? $settings['content_border_radius']['bottom'] : $top;
+			$left = ! empty( $settings['content_border_radius']['left'] ) ? $settings['content_border_radius']['left'] : $top;
+			$unit = ! empty( $settings['content_border_radius']['unit'] ) ? $settings['content_border_radius']['unit'] : 'px';
+			$radius = "{$top}{$unit} {$right}{$unit} {$bottom}{$unit} {$left}{$unit}";
+			$css .= "{$base_selector} .ee-accordion-content { border-radius: {$radius} !important; }";
+		}
+		
+		// Content Padding - only apply when active (closed state should have padding: 0)
+		// Calculate icon offset to align content with title start
+		// Icon offset = icon width + icon margin-right (if icon exists)
+		$icon_offset = 0;
+		$has_icon = false;
+		
+		// Check if global icon is enabled
+		if ( ! empty( $settings['enable_global_icon'] ) && $settings['enable_global_icon'] === 'yes' ) {
+			$has_icon = true;
+			$icon_size = ! empty( $settings['icon_size']['size'] ) ? floatval( $settings['icon_size']['size'] ) : 24;
+			$icon_spacing = ! empty( $settings['icon_spacing']['size'] ) ? floatval( $settings['icon_spacing']['size'] ) : 15;
+			$icon_offset = $icon_size + $icon_spacing;
+		}
+		
+		if ( ! empty( $settings['content_padding'] ) && is_array( $settings['content_padding'] ) ) {
+			$top = ! empty( $settings['content_padding']['top'] ) ? $settings['content_padding']['top'] : '0';
+			$right = ! empty( $settings['content_padding']['right'] ) ? $settings['content_padding']['right'] : $top;
+			$bottom = ! empty( $settings['content_padding']['bottom'] ) ? $settings['content_padding']['bottom'] : $top;
+			$left = ! empty( $settings['content_padding']['left'] ) ? $settings['content_padding']['left'] : $top;
+			$unit = ! empty( $settings['content_padding']['unit'] ) ? $settings['content_padding']['unit'] : 'px';
+			
+			// Add icon offset to left padding to align with title start
+			if ( $has_icon && $icon_offset > 0 ) {
+				$left_value = floatval( $left );
+				$left_with_offset = $left_value + $icon_offset;
+				$left_padding = $left_with_offset . $unit;
+			} else {
+				$left_padding = $left . $unit;
+			}
+			
+			$padding = "{$top}{$unit} {$right}{$unit} {$bottom}{$unit} {$left_padding}";
+			// Only apply padding when accordion is active (open)
+			$css .= "{$base_selector} .ee-accordion-item.active .ee-accordion-content { padding: {$padding} !important; }";
+			// Ensure closed state has no padding
+			$css .= "{$base_selector} .ee-accordion-content { padding: 0 !important; }";
+		} else if ( $has_icon && $icon_offset > 0 ) {
+			// If no padding is set but icon exists, add offset for alignment
+			$css .= "{$base_selector} .ee-accordion-item.active .ee-accordion-content { padding-left: {$icon_offset}px !important; }";
+		}
+		
+		// Item Spacing
+		if ( ! empty( $settings['item_spacing']['size'] ) ) {
+			$spacing = $settings['item_spacing']['size'] . ( ! empty( $settings['item_spacing']['unit'] ) ? $settings['item_spacing']['unit'] : 'px' );
+			$css .= "{$base_selector} .ee-accordion-item + .ee-accordion-item { margin-top: {$spacing} !important; }";
+		}
+		
+		// Header Padding
+		if ( ! empty( $settings['header_padding'] ) && is_array( $settings['header_padding'] ) ) {
+			$top = ! empty( $settings['header_padding']['top'] ) ? $settings['header_padding']['top'] : '0';
+			$right = ! empty( $settings['header_padding']['right'] ) ? $settings['header_padding']['right'] : $top;
+			$bottom = ! empty( $settings['header_padding']['bottom'] ) ? $settings['header_padding']['bottom'] : $top;
+			$left = ! empty( $settings['header_padding']['left'] ) ? $settings['header_padding']['left'] : $top;
+			$unit = ! empty( $settings['header_padding']['unit'] ) ? $settings['header_padding']['unit'] : 'px';
+			$padding = "{$top}{$unit} {$right}{$unit} {$bottom}{$unit} {$left}{$unit}";
+			$css .= "{$base_selector} .ee-accordion-header { padding: {$padding} !important; }";
+		}
+		
+		// Header Background - always output if set
+		if ( isset( $settings['header_background'] ) ) {
+			$bg = ! empty( $settings['header_background'] ) ? $settings['header_background'] : 'transparent';
+			$css .= "{$base_selector} .ee-accordion-header { background-color: {$bg} !important; }";
+		}
+		
+		// Header Background (Active) - always output if set
+		if ( isset( $settings['header_active_background'] ) ) {
+			$bg = ! empty( $settings['header_active_background'] ) ? $settings['header_active_background'] : 'transparent';
+			$css .= "{$base_selector} .ee-accordion-item.active .ee-accordion-header { background-color: {$bg} !important; }";
+		}
+		
+		// Header Background (Hover)
+		if ( isset( $settings['header_hover_background'] ) ) {
+			$hover_bg = ! empty( $settings['header_hover_background'] ) ? $settings['header_hover_background'] : '';
+			if ( $hover_bg !== '' && $hover_bg !== null ) {
+				$css .= "{$base_selector} .ee-accordion-header:hover { background-color: {$hover_bg} !important; }";
+			}
+		}
+		
+		// Border - handle all cases including "none"
+		if ( isset( $settings['item_border_border'] ) ) {
+			$border_style = $settings['item_border_border'];
+			
+			if ( $border_style === 'none' ) {
+				// Explicitly set border to none
+				$css .= "{$base_selector} .ee-accordion-item { border-style: none !important; border-width: 0 !important; }";
+			} else if ( ! empty( $border_style ) ) {
+				// Border is set to a style (solid, dashed, etc.)
+				$border_width = '1px';
+				if ( ! empty( $settings['item_border_width'] ) && is_array( $settings['item_border_width'] ) ) {
+					$top = ! empty( $settings['item_border_width']['top'] ) ? $settings['item_border_width']['top'] : '0';
+					$right = ! empty( $settings['item_border_width']['right'] ) ? $settings['item_border_width']['right'] : $top;
+					$bottom = ! empty( $settings['item_border_width']['bottom'] ) ? $settings['item_border_width']['bottom'] : $top;
+					$left = ! empty( $settings['item_border_width']['left'] ) ? $settings['item_border_width']['left'] : $top;
+					$unit = ! empty( $settings['item_border_width']['unit'] ) ? $settings['item_border_width']['unit'] : 'px';
+					$border_width = "{$top}{$unit} {$right}{$unit} {$bottom}{$unit} {$left}{$unit}";
+				}
+				$border_color = ! empty( $settings['item_border_color'] ) ? $settings['item_border_color'] : '#e0e0e0';
+				$css .= "{$base_selector} .ee-accordion-item { border-style: {$border_style} !important; border-width: {$border_width} !important; border-color: {$border_color} !important; }";
+			}
+		}
+		
+		// Border Radius
+		if ( ! empty( $settings['item_border_radius'] ) && is_array( $settings['item_border_radius'] ) ) {
+			$top = ! empty( $settings['item_border_radius']['top'] ) ? $settings['item_border_radius']['top'] : '0';
+			$right = ! empty( $settings['item_border_radius']['right'] ) ? $settings['item_border_radius']['right'] : $top;
+			$bottom = ! empty( $settings['item_border_radius']['bottom'] ) ? $settings['item_border_radius']['bottom'] : $top;
+			$left = ! empty( $settings['item_border_radius']['left'] ) ? $settings['item_border_radius']['left'] : $top;
+			$unit = ! empty( $settings['item_border_radius']['unit'] ) ? $settings['item_border_radius']['unit'] : 'px';
+			$radius = "{$top}{$unit} {$right}{$unit} {$bottom}{$unit} {$left}{$unit}";
+			$css .= "{$base_selector} .ee-accordion-item { border-radius: {$radius} !important; }";
+		}
+		
+		// Output CSS if we have any
+		if ( ! empty( $css ) ) {
+			echo '<style id="ee-accordion-' . esc_attr( $widget_id ) . '-inline-css">' . $css . '</style>';
+		}
 	}
 }
 

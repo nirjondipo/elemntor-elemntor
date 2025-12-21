@@ -76,7 +76,7 @@ class Mobile_Menu_Widget extends Widget_Base {
 	 * @return array Widget categories.
 	 */
 	public function get_categories() {
-		return array( 'general' );
+		return array( 'custom-elements' );
 	}
 
 	/**
@@ -819,65 +819,79 @@ class Mobile_Menu_Widget extends Widget_Base {
 		$base_selector = ! empty( $post_selector ) ? $post_selector : $widget_selector;
 		$css = '';
 		
-		// Button Size - override reset CSS
-		if ( ! empty( $settings['burger_button_size']['size'] ) ) {
+		// Button Size - override reset CSS - always output if set
+		if ( isset( $settings['burger_button_size']['size'] ) && $settings['burger_button_size']['size'] !== '' ) {
 			$size = $settings['burger_button_size']['size'] . ( ! empty( $settings['burger_button_size']['unit'] ) ? $settings['burger_button_size']['unit'] : 'px' );
 			$css .= "{$base_selector} button.ee-mobile-menu-toggle, {$base_selector} [type=button].ee-mobile-menu-toggle { width: {$size} !important; height: {$size} !important; min-width: {$size} !important; min-height: {$size} !important; }";
 		}
 		
-		// Icon Size
-		if ( ! empty( $settings['burger_size']['size'] ) ) {
+		// Icon Size - always output if set
+		if ( isset( $settings['burger_size']['size'] ) && $settings['burger_size']['size'] !== '' ) {
 			$icon_size = $settings['burger_size']['size'] . ( ! empty( $settings['burger_size']['unit'] ) ? $settings['burger_size']['unit'] : 'px' );
 			$css .= "{$base_selector} .ee-mobile-menu-toggle svg { width: {$icon_size} !important; height: {$icon_size} !important; }";
 			$css .= "{$base_selector} .ee-mobile-menu-toggle i { font-size: {$icon_size} !important; }";
 			$css .= "{$base_selector} .ee-mobile-menu-toggle .e-font-icon-svg { width: {$icon_size} !important; height: {$icon_size} !important; }";
 		}
 		
-		// Icon Color - override reset CSS
-		if ( ! empty( $settings['burger_color'] ) ) {
-			$css .= "{$base_selector} button.ee-mobile-menu-toggle, {$base_selector} [type=button].ee-mobile-menu-toggle { color: {$settings['burger_color']} !important; }";
-			$css .= "{$base_selector} .ee-mobile-menu-toggle svg { fill: {$settings['burger_color']} !important; }";
-			$css .= "{$base_selector} .ee-mobile-menu-toggle svg path { fill: {$settings['burger_color']} !important; }";
+		// Icon Color - override reset CSS - always output if set (handles CSS variables)
+		if ( isset( $settings['burger_color'] ) ) {
+			$color = $settings['burger_color'];
+			// Output if color is set (including CSS variables like var(--e-global-color-primary))
+			if ( $color !== '' && $color !== null ) {
+				$css .= "{$base_selector} button.ee-mobile-menu-toggle, {$base_selector} [type=button].ee-mobile-menu-toggle { color: {$color} !important; }";
+				$css .= "{$base_selector} .ee-mobile-menu-toggle svg { fill: {$color} !important; }";
+				$css .= "{$base_selector} .ee-mobile-menu-toggle svg path { fill: {$color} !important; }";
+			}
 		}
 		
-		// Background Color - override reset CSS
-		if ( ! empty( $settings['burger_bg_color'] ) ) {
-			$css .= "{$base_selector} button.ee-mobile-menu-toggle, {$base_selector} [type=button].ee-mobile-menu-toggle { background-color: {$settings['burger_bg_color']} !important; }";
+		// Background Color - override reset CSS - always output if set (handles CSS variables)
+		if ( isset( $settings['burger_bg_color'] ) ) {
+			$bg_color = $settings['burger_bg_color'];
+			// Output if background color is set (including CSS variables like var(--e-global-color-secondary))
+			if ( $bg_color !== '' && $bg_color !== null ) {
+				$css .= "{$base_selector} button.ee-mobile-menu-toggle, {$base_selector} [type=button].ee-mobile-menu-toggle { background-color: {$bg_color} !important; }";
+			}
 		}
 		
-		// Border Radius - override reset CSS
-		if ( ! empty( $settings['burger_border_radius']['size'] ) ) {
+		// Border Radius - override reset CSS - always output if set
+		if ( isset( $settings['burger_border_radius']['size'] ) && $settings['burger_border_radius']['size'] !== '' ) {
 			$radius = $settings['burger_border_radius']['size'] . ( ! empty( $settings['burger_border_radius']['unit'] ) ? $settings['burger_border_radius']['unit'] : '%' );
 			$css .= "{$base_selector} button.ee-mobile-menu-toggle, {$base_selector} [type=button].ee-mobile-menu-toggle { border-radius: {$radius} !important; }";
 		}
 		
 		// Border - handle Group_Control_Border structure - override reset CSS
 		// Check if border is set (Elementor stores it in burger_border_border)
-		if ( ! empty( $settings['burger_border_border'] ) && $settings['burger_border_border'] !== 'none' ) {
+		// Always output border-style if set (including "solid")
+		if ( isset( $settings['burger_border_border'] ) && $settings['burger_border_border'] !== '' ) {
 			$border_style = $settings['burger_border_border'];
 			
-			// Get border width - Elementor stores it as dimensions
-			$border_width = '';
-			if ( ! empty( $settings['burger_border_width'] ) ) {
-				if ( is_array( $settings['burger_border_width'] ) ) {
-					$top = ! empty( $settings['burger_border_width']['top'] ) ? $settings['burger_border_width']['top'] : '0';
-					$right = ! empty( $settings['burger_border_width']['right'] ) ? $settings['burger_border_width']['right'] : $top;
-					$bottom = ! empty( $settings['burger_border_width']['bottom'] ) ? $settings['burger_border_width']['bottom'] : $top;
-					$left = ! empty( $settings['burger_border_width']['left'] ) ? $settings['burger_border_width']['left'] : $top;
-					$unit = ! empty( $settings['burger_border_width']['unit'] ) ? $settings['burger_border_width']['unit'] : 'px';
-					$border_width = "{$top}{$unit} {$right}{$unit} {$bottom}{$unit} {$left}{$unit}";
-				} else {
-					$border_width = $settings['burger_border_width'];
-				}
+			if ( $border_style === 'none' ) {
+				// Explicitly set border to none
+				$css .= "{$base_selector} button.ee-mobile-menu-toggle, {$base_selector} [type=button].ee-mobile-menu-toggle { border-style: none !important; border-width: 0 !important; }";
 			} else {
-				$border_width = '1px';
+				// Border is set to a style (solid, dashed, etc.) - always output
+				// Get border width - Elementor stores it as dimensions
+				$border_width = '';
+				if ( ! empty( $settings['burger_border_width'] ) ) {
+					if ( is_array( $settings['burger_border_width'] ) ) {
+						$top = ! empty( $settings['burger_border_width']['top'] ) ? $settings['burger_border_width']['top'] : '0';
+						$right = ! empty( $settings['burger_border_width']['right'] ) ? $settings['burger_border_width']['right'] : $top;
+						$bottom = ! empty( $settings['burger_border_width']['bottom'] ) ? $settings['burger_border_width']['bottom'] : $top;
+						$left = ! empty( $settings['burger_border_width']['left'] ) ? $settings['burger_border_width']['left'] : $top;
+						$unit = ! empty( $settings['burger_border_width']['unit'] ) ? $settings['burger_border_width']['unit'] : 'px';
+						$border_width = "{$top}{$unit} {$right}{$unit} {$bottom}{$unit} {$left}{$unit}";
+					} else {
+						$border_width = $settings['burger_border_width'];
+					}
+				} else {
+					$border_width = '1px';
+				}
+				
+				// Get border color - handle CSS variables
+				// Don't output border-color here if it's set separately (will be output later to override)
+				// Only output border-style and border-width here
+				$css .= "{$base_selector} button.ee-mobile-menu-toggle, {$base_selector} [type=button].ee-mobile-menu-toggle { border-style: {$border_style} !important; border-width: {$border_width} !important; }";
 			}
-			
-			// Get border color - handle CSS variables
-			$border_color = ! empty( $settings['burger_border_color'] ) ? $settings['burger_border_color'] : '#333333';
-			
-			// Output border with all properties
-			$css .= "{$base_selector} button.ee-mobile-menu-toggle, {$base_selector} [type=button].ee-mobile-menu-toggle { border-style: {$border_style} !important; border-width: {$border_width} !important; border-color: {$border_color} !important; }";
 		}
 		
 		// Also handle individual border properties if they exist (Elementor sometimes stores them separately)
@@ -897,14 +911,22 @@ class Mobile_Menu_Widget extends Widget_Base {
 			}
 		}
 		
-		// Border color separately
-		if ( ! empty( $settings['burger_border_color'] ) ) {
-			$css .= "{$base_selector} button.ee-mobile-menu-toggle, {$base_selector} [type=button].ee-mobile-menu-toggle { border-color: {$settings['burger_border_color']} !important; }";
+		// Border color separately - handle CSS variables - always output if set
+		if ( isset( $settings['burger_border_color'] ) ) {
+			$border_color_value = $settings['burger_border_color'];
+			// Output if border color is set (including CSS variables like var(--e-global-color-primary))
+			if ( $border_color_value !== '' && $border_color_value !== null ) {
+				$css .= "{$base_selector} button.ee-mobile-menu-toggle, {$base_selector} [type=button].ee-mobile-menu-toggle { border-color: {$border_color_value} !important; }";
+			}
 		}
 		
-		// Border style separately
-		if ( ! empty( $settings['burger_border_border'] ) && $settings['burger_border_border'] !== 'none' ) {
-			$css .= "{$base_selector} button.ee-mobile-menu-toggle, {$base_selector} [type=button].ee-mobile-menu-toggle { border-style: {$settings['burger_border_border']} !important; }";
+		// Border style separately - always output if set (including "solid")
+		if ( isset( $settings['burger_border_border'] ) && $settings['burger_border_border'] !== '' ) {
+			if ( $settings['burger_border_border'] === 'none' ) {
+				$css .= "{$base_selector} button.ee-mobile-menu-toggle, {$base_selector} [type=button].ee-mobile-menu-toggle { border-style: none !important; }";
+			} else {
+				$css .= "{$base_selector} button.ee-mobile-menu-toggle, {$base_selector} [type=button].ee-mobile-menu-toggle { border-style: {$settings['burger_border_border']} !important; }";
+			}
 		}
 		
 		// Menu Panel Width

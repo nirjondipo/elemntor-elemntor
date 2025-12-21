@@ -164,6 +164,7 @@ final class Elemntor_Elemntor {
 		$this->i18n();
 
 		// Add Plugin actions
+		add_action( 'elementor/elements/categories_registered', array( $this, 'register_widget_categories' ) );
 		add_action( 'elementor/widgets/register', array( $this, 'register_widgets' ) );
 		add_action( 'elementor/controls/register', array( $this, 'register_controls' ) );
 
@@ -175,6 +176,28 @@ final class Elemntor_Elemntor {
 
 		// Enqueue styles and scripts on frontend
 		add_action( 'elementor/frontend/after_enqueue_styles', array( $this, 'enqueue_widget_assets' ) );
+
+		// Enqueue scripts in editor mode
+		add_action( 'elementor/editor/after_enqueue_scripts', array( $this, 'enqueue_editor_scripts' ) );
+	}
+
+	/**
+	 * Register Widget Categories
+	 *
+	 * Register custom widget categories for Elementor.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 * @param \Elementor\Elements_Manager $elements_manager Elementor elements manager.
+	 */
+	public function register_widget_categories( $elements_manager ) {
+		$elements_manager->add_category(
+			'custom-elements',
+			array(
+				'title' => esc_html__( 'Custom Elements', 'elemntor-elemntor' ),
+				'icon'  => 'eicon-star',
+			)
+		);
 	}
 
 	/**
@@ -254,6 +277,19 @@ final class Elemntor_Elemntor {
 	public function enqueue_widget_assets() {
 		// Styles and scripts are automatically enqueued via get_style_depends() and get_script_depends()
 		// This method is here for any additional enqueueing if needed
+	}
+
+	/**
+	 * Enqueue Editor Scripts
+	 *
+	 * Enqueue scripts in Elementor editor mode.
+	 *
+	 * @since 1.0.0
+	 * @access public
+	 */
+	public function enqueue_editor_scripts() {
+		wp_enqueue_script( 'elemntor-elemntor-mobile-menu' );
+		wp_enqueue_script( 'elemntor-elemntor-accordion' );
 	}
 
 	/**
