@@ -478,6 +478,48 @@ class Accordion_Widget extends Widget_Base {
 		);
 
 		$this->add_control(
+			'icon_active_filter_hue',
+			array(
+				'label'      => esc_html__( 'Active Icon Filter Hue Rotate', 'elemntor-elemntor' ),
+				'type'       => Controls_Manager::SLIDER,
+				'size_units' => array( 'deg' ),
+				'range'      => array(
+					'deg' => array(
+						'min'  => 0,
+						'max'  => 360,
+						'step' => 1,
+					),
+				),
+				'default'    => array(
+					'unit' => 'deg',
+					'size' => 81,
+				),
+				'description' => esc_html__( 'Hue rotation for active icon filter effect', 'elemntor-elemntor' ),
+			)
+		);
+
+		$this->add_control(
+			'icon_active_filter_brightness',
+			array(
+				'label'      => esc_html__( 'Active Icon Filter Brightness', 'elemntor-elemntor' ),
+				'type'       => Controls_Manager::SLIDER,
+				'size_units' => array( '%' ),
+				'range'      => array(
+					'%' => array(
+						'min'  => 0,
+						'max'  => 200,
+						'step' => 1,
+					),
+				),
+				'default'    => array(
+					'unit' => '%',
+					'size' => 92,
+				),
+				'description' => esc_html__( 'Brightness for active icon filter effect', 'elemntor-elemntor' ),
+			)
+		);
+
+		$this->add_control(
 			'toggle_icon_size',
 			array(
 				'label'      => esc_html__( 'Toggle Icon Size', 'elemntor-elemntor' ),
@@ -871,6 +913,18 @@ class Accordion_Widget extends Widget_Base {
 			$icon_spacing = $settings['icon_spacing']['size'] . ( ! empty( $settings['icon_spacing']['unit'] ) ? $settings['icon_spacing']['unit'] : 'px' );
 			$css .= "{$base_selector} .ee-accordion-icon-left { margin-right: {$icon_spacing} !important; }";
 		}
+		
+		// Active Icon Filter Effect
+		$hue_rotate = isset( $settings['icon_active_filter_hue']['size'] ) ? floatval( $settings['icon_active_filter_hue']['size'] ) : 81;
+		$brightness = isset( $settings['icon_active_filter_brightness']['size'] ) ? floatval( $settings['icon_active_filter_brightness']['size'] ) : 92;
+		$hue_unit = isset( $settings['icon_active_filter_hue']['unit'] ) ? $settings['icon_active_filter_hue']['unit'] : 'deg';
+		$brightness_unit = isset( $settings['icon_active_filter_brightness']['unit'] ) ? $settings['icon_active_filter_brightness']['unit'] : '%';
+		$css .= "{$base_selector} .ee-accordion-item.active .ee-accordion-icon-left svg { filter: hue-rotate({$hue_rotate}{$hue_unit}) brightness({$brightness}{$brightness_unit}) !important; transition-duration: 0.3s; }";
+		$css .= "{$base_selector} .ee-accordion-item.active .ee-accordion-icon-left svg path { filter: hue-rotate({$hue_rotate}{$hue_unit}) brightness({$brightness}{$brightness_unit}) !important; transition-duration: 0.3s; }";
+		
+		// Hover Icon Filter Effect
+		$css .= "{$base_selector} .ee-accordion-header:hover .ee-accordion-icon-left svg { filter: hue-rotate({$hue_rotate}{$hue_unit}) brightness({$brightness}{$brightness_unit}) !important; transition-duration: 0.3s; }";
+		$css .= "{$base_selector} .ee-accordion-header:hover .ee-accordion-icon-left svg path { filter: hue-rotate({$hue_rotate}{$hue_unit}) brightness({$brightness}{$brightness_unit}) !important; transition-duration: 0.3s; }";
 		
 		// Toggle Icon Size
 		if ( ! empty( $settings['toggle_icon_size']['size'] ) ) {

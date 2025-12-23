@@ -110,6 +110,11 @@
 
 .ee-accordion-icon-left svg path {
 	fill: currentColor;
+	transition: filter 0.3s ease;
+}
+
+.ee-accordion-icon-left svg {
+	transition: filter 0.3s ease;
 }
 
 .ee-accordion-title {
